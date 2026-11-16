@@ -34,6 +34,7 @@ router.post("/", validateBody(accessRequestSchema), async (req, res, next) => {
     });
     await recordAudit({
       actorId: req.user._id,
+      subjectId: req.user._id,
       action: "access_request.submitted",
       resourceType: "access_request",
       resourceId: accessRequest._id.toString(),
@@ -95,6 +96,7 @@ router.post("/:id/review", requireRole("reviewer", "admin"), validateBody(review
 
     await recordAudit({
       actorId: req.user._id,
+      subjectId: reviewed.submittedBy,
       action: "access_request.reviewed",
       resourceType: "access_request",
       resourceId: reviewed._id.toString(),
