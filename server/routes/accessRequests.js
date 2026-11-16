@@ -25,7 +25,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// Members can submit governance requests. The prototype accepts synthetic-demo scope only.
+// A member proposes sharing their own synthetic demo record with a named recipient.
 router.post("/", validateBody(accessRequestSchema), async (req, res, next) => {
   try {
     const accessRequest = await AccessRequest.create({
@@ -51,17 +51,20 @@ router.post("/:id/review", requireRole("reviewer", "admin"), validateBody(review
       return res.status(400).json({ error: "INVALID_ID", message: "The request ID is invalid." });
     }
 
-    const accessRequest = await AccessRequest.findById(req.params.id);
-    if (!accessRequest) return res.status(404).json({ error: "NOT_FOUND", message: "Access request not found." });
-    if (accessRequest.status !== "pending") {
+    const existing = await AccessRequest.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: "NOT_FOUND", message: "Access request not found." });
+    if (existing.submittedBy.toString() === req.user._id.toString()) {
+      return res.status(403).json({ error: "SELF_REVIEW_BLOCKED", message: "A reviewer cannot review their own request." });
+    }
+    if (existing.status !== "pending") {
       return res.status(409).json({ error: "ALREADY_REVIEWED", message: "This request has already been reviewed." });
     }
 
     const { status, reviewNote } = req.validatedBody;
     if (status === "approved") {
       const latestConsent = await ConsentRecord.findOne({
-        userId: accessRequest.submittedBy,
-        purpose: accessRequest.purpose
+        userId: existing.submittedBy,
+        purpose: existing.purpose
       }).sort({ createdAt: -1 }).lean();
 
       if (!latestConsent || latestConsent.status !== "granted") {
@@ -72,21 +75,33 @@ router.post("/:id/review", requireRole("reviewer", "admin"), validateBody(review
       }
     }
 
-    accessRequest.status = status;
-    accessRequest.reviewNote = reviewNote;
-    accessRequest.reviewedBy = req.user._id;
-    accessRequest.reviewedAt = new Date();
-    await accessRequest.save();
+    // Conditional update ensures only one concurrent reviewer can decide a pending request.
+    const reviewed = await AccessRequest.findOneAndUpdate(
+      { _id: existing._id, status: "pending" },
+      {
+        $set: {
+          status,
+          reviewNote,
+          reviewedBy: req.user._id,
+          reviewedAt: new Date()
+        }
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!reviewed) {
+      return res.status(409).json({ error: "ALREADY_REVIEWED", message: "Another reviewer has already decided this request." });
+    }
 
     await recordAudit({
       actorId: req.user._id,
       action: "access_request.reviewed",
       resourceType: "access_request",
-      resourceId: accessRequest._id.toString(),
-      details: { status, purpose: accessRequest.purpose }
+      resourceId: reviewed._id.toString(),
+      details: { status, purpose: reviewed.purpose }
     });
 
-    res.json({ request: accessRequest });
+    res.json({ request: reviewed });
   } catch (error) {
     next(error);
   }
