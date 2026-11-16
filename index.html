@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101c2c">
+  <meta name="description" content="MINDCOMMON — community-owned mental health data and responsible AI governance.">
+  <title>MINDCOMMON — Data Governance Demo</title>
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="MINDCOMMON home">
+        <span class="brand-mark">M</span>
+        <span><strong>MINDCOMMON</strong><small>COMMUNITY DATA GOVERNANCE</small></span>
+      </a>
+      <div class="side-label">WORKSPACE</div>
+      <nav aria-label="Main navigation">
+        <button class="nav-item active" data-view="overview"><span>▦</span> Overview</button>
+        <button class="nav-item" data-view="consent"><span>◉</span> My consent</button>
+        <button class="nav-item" data-view="requests"><span>⇄</span> Access requests</button>
+        <button class="nav-item" data-view="audit"><span>≋</span> Audit trail</button>
+        <button class="nav-item" data-view="community"><span>◎</span> Community governance</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="demo-note"><strong>Demo environment</strong><p>Synthetic records only. No real participant data.</p></div>
+        <span class="version">MINDCOMMON · v0.1</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><span class="eyebrow">PUBLIC INTEREST TECHNOLOGY</span><h1 id="page-title">Overview</h1></div>
+        <div class="user-chip"><span class="avatar">AM</span><span><strong>Amara M.</strong><small>Demo participant</small></span></div>
+      </header>
+      <div class="notice"><span>ⓘ</span><p><strong>Prototype only.</strong> This interface demonstrates governance concepts. It is not a secure service and must not be used with real health information.</p></div>
+      <section id="view" aria-live="polite"></section>
+      <footer>© MINDCOMMON · An open-source public-interest prototype <span>Built for transparency, participation, and accountability.</span></footer>
+    </main>
+  </div>
+  <script src="src/app.js"></script>
+</body>
+</html>
