@@ -1,6 +1,7 @@
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const { rateLimit } = require("express-rate-limit");
 const authRoutes = require("./routes/auth");
 const consentRoutes = require("./routes/consents");
@@ -9,7 +10,6 @@ const auditRoutes = require("./routes/audit");
 const { getJwtSecret } = require("./middleware/auth");
 
 function createApp() {
-  // Fail early rather than starting with a known-weak signing secret.
   getJwtSecret();
 
   const app = express();
@@ -26,14 +26,26 @@ function createApp() {
   app.use(helmet());
   app.use(cors({
     origin(origin, callback) {
-      // Non-browser clients without an Origin header are allowed. Browser origins require an explicit allow-list.
       if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
       return callback(null, false);
     },
+    credentials: true,
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"]
   }));
   app.use(express.json({ limit: "20kb", strict: true }));
+  app.use(cookieParser());
+
+  // Browser state-changing requests must originate from an explicitly configured frontend.
+  // Requests without Origin are retained for controlled CLI/server-to-server development use.
+  app.use("/api", (req, res, next) => {
+    if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) return next();
+    const origin = req.get("origin");
+    if (origin && !allowedOrigins.includes(origin)) {
+      return res.status(403).json({ error: "UNTRUSTED_ORIGIN", message: "This browser origin is not allowed to change data." });
+    }
+    next();
+  });
 
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", service: "mindcommon-api", mode: "prototype" });
@@ -56,7 +68,6 @@ function createApp() {
   });
 
   app.use((error, req, res, next) => {
-    // Do not log request bodies, authorization headers, or database documents.
     const status = error.status && error.status < 500 ? error.status : 500;
     if (status >= 500) process.stderr.write("Request failed: " + error.message + "\n");
     res.status(status).json({
