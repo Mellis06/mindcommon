@@ -335,6 +335,7 @@
       state.consents = [];
       state.requests = [];
       state.events = [];
+      state.authMode = "login";
       showAuth();
       flash(error.message, "error");
       return;
