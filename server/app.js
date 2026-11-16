@@ -58,7 +58,9 @@ function createApp() {
     legacyHeaders: false,
     message: { error: "RATE_LIMITED", message: "Too many authentication attempts. Try again later." }
   });
-  app.use("/api/auth", authLimiter, authRoutes);
+  app.post("/api/auth/register", authLimiter);
+  app.post("/api/auth/login", authLimiter);
+  app.use("/api/auth", authRoutes);
   app.use("/api/consents", consentRoutes);
   app.use("/api/access-requests", accessRequestRoutes);
   app.use("/api/audit-events", auditRoutes);
