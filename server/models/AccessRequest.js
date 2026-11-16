@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 
 const accessRequestSchema = new mongoose.Schema({
+  // The signed-in member is the participant proposing a controlled use of their own demo record.
   submittedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
-  requesterName: { type: String, required: true, trim: true, maxlength: 100 },
-  organisation: { type: String, required: true, trim: true, maxlength: 120 },
+  recipientName: { type: String, required: true, trim: true, maxlength: 100 },
+  recipientOrganisation: { type: String, required: true, trim: true, maxlength: 120 },
   purpose: { type: String, enum: ["programme", "research", "ai"], required: true },
   // This prototype deliberately permits synthetic-demo scope only.
   scope: { type: String, enum: ["synthetic-demo"], default: "synthetic-demo", required: true },
