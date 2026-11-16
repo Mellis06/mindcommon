@@ -3,10 +3,14 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const { validateBody } = require("../middleware/validate");
 const { registerSchema, loginSchema } = require("../validation/schemas");
-const { issueToken } = require("../middleware/auth");
+const { requireAuth, setSessionCookie, clearSessionCookie } = require("../middleware/auth");
 const { recordAudit } = require("../services/audit");
 
 const router = express.Router();
+
+function publicUser(user) {
+  return { id: user._id, name: user.name, email: user.email, role: user.role };
+}
 
 router.post("/register", validateBody(registerSchema), async (req, res, next) => {
   try {
@@ -19,16 +23,15 @@ router.post("/register", validateBody(registerSchema), async (req, res, next) =>
     const user = await User.create({ name, email: normalisedEmail, passwordHash });
     await recordAudit({
       actorId: user._id,
+      subjectId: user._id,
       action: "account.registered",
       resourceType: "user",
       resourceId: user._id.toString(),
       details: { role: "member" }
     });
 
-    return res.status(201).json({
-      token: issueToken(user),
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
-    });
+    setSessionCookie(res, user);
+    return res.status(201).json({ user: publicUser(user) });
   } catch (error) {
     if (error.code === 11000) return res.status(409).json({ error: "ACCOUNT_EXISTS", message: "An account with that email already exists." });
     next(error);
@@ -45,18 +48,26 @@ router.post("/login", validateBody(loginSchema), async (req, res, next) => {
 
     await recordAudit({
       actorId: user._id,
+      subjectId: user._id,
       action: "account.login",
       resourceType: "user",
       resourceId: user._id.toString()
     });
 
-    return res.json({
-      token: issueToken(user),
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
-    });
+    setSessionCookie(res, user);
+    return res.json({ user: publicUser(user) });
   } catch (error) {
     next(error);
   }
+});
+
+router.post("/logout", (req, res) => {
+  clearSessionCookie(res);
+  res.status(204).end();
+});
+
+router.get("/me", requireAuth, (req, res) => {
+  res.json({ user: publicUser(req.user) });
 });
 
 module.exports = router;
