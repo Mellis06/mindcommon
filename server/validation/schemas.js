@@ -20,8 +20,8 @@ const consentSchema = z.object({
 }).strict();
 
 const accessRequestSchema = z.object({
-  requesterName: z.string().trim().min(2).max(100),
-  organisation: z.string().trim().min(2).max(120),
+  recipientName: z.string().trim().min(2).max(100),
+  recipientOrganisation: z.string().trim().min(2).max(120),
   purpose: z.enum(purposes),
   scope: z.literal("synthetic-demo"),
   rationale: z.string().trim().min(20).max(500)
