@@ -15,6 +15,8 @@ router.get("/me", async (req, res, next) => {
     })
       .sort({ createdAt: -1 })
       .limit(100)
+      .populate("actorId", "name")
+      .populate("subjectId", "name")
       .lean();
     res.json({ events });
   } catch (error) {
