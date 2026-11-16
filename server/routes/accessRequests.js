@@ -25,7 +25,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// A member can submit a governance request, but this prototype only allows synthetic-demo scope.
+// Members can submit governance requests. The prototype accepts synthetic-demo scope only.
 router.post("/", validateBody(accessRequestSchema), async (req, res, next) => {
   try {
     const accessRequest = await AccessRequest.create({
@@ -47,7 +47,7 @@ router.post("/", validateBody(accessRequestSchema), async (req, res, next) => {
 
 router.post("/:id/review", requireRole("reviewer", "admin"), validateBody(reviewSchema), async (req, res, next) => {
   try {
-    if (!/^[a-f\\d]{24}$/i.test(req.params.id)) {
+    if (!/^[a-f\d]{24}$/i.test(req.params.id)) {
       return res.status(400).json({ error: "INVALID_ID", message: "The request ID is invalid." });
     }
 
