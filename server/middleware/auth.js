@@ -20,7 +20,7 @@ function issueToken(user) {
 async function requireAuth(req, res, next) {
   try {
     const header = req.get("authorization") || "";
-    const match = header.match(/^Bearer\\s+(.+)$/i);
+    const match = header.match(/^Bearer\s+(.+)$/i);
     if (!match) return res.status(401).json({ error: "UNAUTHENTICATED", message: "A bearer token is required." });
 
     const payload = jwt.verify(match[1], getJwtSecret(), {
