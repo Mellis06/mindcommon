@@ -4,14 +4,12 @@
   "private": true,
   "description": "Open-source public-interest prototype for community-led mental health data governance.",
   "main": "server.js",
-  "engines": {
-    "node": ">=20"
-  },
+  "engines": { "node": ">=20" },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node --test",
-    "check": "node --check server.js && node --check server/app.js"
+    "check": "node --check server.js && node --check server/app.js && node --check server/config/database.js && node --check server/models/User.js && node --check server/models/ConsentRecord.js && node --check server/models/AccessRequest.js && node --check server/models/AuditEvent.js && node --check server/validation/schemas.js && node --check server/middleware/validate.js && node --check server/middleware/auth.js && node --check server/services/audit.js && node --check server/routes/auth.js && node --check server/routes/consents.js && node --check server/routes/accessRequests.js && node --check server/routes/audit.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
