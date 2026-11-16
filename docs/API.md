@@ -1,33 +1,37 @@
-# API foundation (v0.2)
+# API and browser integration (v0.3)
 
-This backend is a development foundation, not a production service. It stores account credentials and governance workflow metadata for a synthetic-only demonstration. It does not store or serve mental-health records.
+This is a development prototype. It stores account credentials and governance workflow metadata for a synthetic-only demonstration. It does not store or serve mental-health records.
 
-## Requirements
+## Requirements and local setup
 
 - Node.js 20 or later.
 - MongoDB instance for local development.
 - Environment variables from \`.env.example\`.
 
-## Run locally
-
-1. Install dependencies: \`npm install\`
+1. Run \`npm install\`.
 2. Copy \`.env.example\` to \`.env\`.
-3. Replace \`JWT_SECRET\` with a random value of at least 32 characters.
-4. Set \`MONGODB_URI\` to a development MongoDB database.
-5. Start the service: \`npm run dev\`
-6. Run checks: \`npm run check\` and \`npm test\`
+3. Set \`JWT_SECRET\` to a random secret of at least 32 characters.
+4. Point \`MONGODB_URI\` to a development-only database.
+5. Start the API with \`npm run dev\`.
+6. Serve the repository root on port 5500 using \`python3 -m http.server 5500\`.
+7. Open \`http://localhost:5500\`.
 
-The default API port is 4000. Health check: \`GET /api/health\`.
+The frontend API URL is configured by the \`mindcommon-api-base\` meta tag in \`index.html\`; the local default is \`http://localhost:4000/api\`. \`CORS_ORIGINS\` must contain the exact browser origin, such as \`http://localhost:5500\`.
 
-## Authentication
+## Authentication and browser sessions
 
-Registration creates a \`member\` account only. A client cannot select or assign its own role. Reviewer/admin accounts must be provisioned through a trusted administrative process outside public registration.
+Public registration creates a \`member\` account only. A client cannot select or assign its own role. Reviewer/admin accounts require a trusted provisioning process.
 
 - \`POST /api/auth/register\` — \`{ name, email, password }\`; password minimum 12 characters.
 - \`POST /api/auth/login\` — \`{ email, password }\`.
-- Authenticated routes require \`Authorization: Bearer <token>\`.
+- \`GET /api/auth/me\` — returns the current authenticated account.
+- \`POST /api/auth/logout\` — clears the session cookie.
 
-Access tokens are short-lived JWTs. This initial release does not implement refresh tokens, password reset, MFA, account recovery, or session revocation.
+Successful registration and login set the \`mindcommon_session\` HttpOnly cookie. The JWT is not returned in JSON, \`localStorage\`, or \`sessionStorage\`. The browser uses \`credentials: include\` for API calls.
+
+Cookie settings are configured using \`COOKIE_SAME_SITE\`, \`COOKIE_SECURE\`, and optional \`COOKIE_DOMAIN\`. The local defaults are intended for the documented localhost setup. Production requires HTTPS and a reviewed cookie/CORS configuration. If frontend and API are on genuinely cross-site domains, \`SameSite=None\` requires \`COOKIE_SECURE=true\`.
+
+State-changing browser requests with an Origin header are accepted only from an origin listed in \`CORS_ORIGINS\`. Requests without an Origin header are retained for controlled CLI/server-to-server development. Do not interpret CORS as a replacement for authentication or authorisation.
 
 ## Governance endpoints
 
@@ -38,17 +42,17 @@ Access tokens are short-lived JWTs. This initial release does not implement refr
 - Purpose: \`programme | research | ai\`.
 - Status: \`granted | withdrawn\`.
 
-A new consent choice appends a record. It does not overwrite prior history. Approval checks the latest record for the requested purpose.
+A new consent choice appends a record; it does not overwrite prior history. Approval checks the latest record for the requested purpose.
 
 ### Access requests
 
-In this demonstration, a signed-in member represents the participant and may propose sharing a synthetic demo record with a named recipient organisation for one defined purpose. A reviewer/community steward then reviews the proposal.
+In this demonstration, a signed-in member may propose a synthetic demo use for a named recipient organisation and purpose. A reviewer/community steward then reviews the proposal.
 
 - \`GET /api/access-requests\` — members see their own requests; reviewers/admins see the review queue.
-- \`POST /api/access-requests\` — submit \`{ recipientName, recipientOrganisation, purpose, scope, rationale }\`. Scope is restricted to \`synthetic-demo\`.
+- \`POST /api/access-requests\` — submit \`{ recipientName, recipientOrganisation, purpose, scope, rationale }\`. Scope must be \`synthetic-demo\`.
 - \`POST /api/access-requests/:id/review\` — reviewer/admin only; body: \`{ status, reviewNote }\`.
 
-Approval is blocked unless the latest consent record for that purpose is granted. Approval is a workflow decision only: **there is no data retrieval or data export endpoint**. A production implementation would need a separate policy-enforcement layer that checks current consent and approval on every protected operation. Review is separated from submission, and the decision update is conditional on the request still being pending.
+Approval is blocked unless the latest purpose-specific consent record is granted. Self-review is blocked, and the decision update is conditional on the request still being pending. Approval is a workflow decision only: **there is no data retrieval or data export endpoint**.
 
 ### Audit events
 
@@ -57,26 +61,37 @@ Approval is blocked unless the latest consent record for that purpose is granted
 
 This is append-only at the application layer, not cryptographically immutable. Database administrators and infrastructure operators can still alter stored data.
 
+## Reviewer setup for local testing
+
+Create a second fictional account through the browser. In the local development environment only, use:
+
+\`\`\`bash
+ALLOW_LOCAL_ROLE_PROMOTION=true npm run promote:local-role -- reviewer@example.test reviewer
+\`\`\`
+
+The account must already exist. The helper refuses to run when \`NODE_ENV=production\`. Do not use this helper as a production role-management process. Production reviewer provisioning needs an authorised, audited administrative procedure with identity verification and separation of duties.
+
 ## Security controls included
 
 - Helmet security headers.
-- CORS origin allow-list.
-- JSON request size limit.
-- Zod request validation and strict body schemas.
+- Explicit CORS origin allow-list with credential support.
+- Origin checks for state-changing browser requests.
+- HttpOnly session cookie; JWT not exposed to browser JavaScript.
+- JSON request size limit and strict Zod body validation.
 - bcrypt password hashing.
-- short-lived JWT access tokens with issuer/audience checks.
-- authentication rate limiting.
-- member role by default; privileged roles are not selectable through registration.
-- no real-data or data-export endpoint.
+- Short-lived JWT with issuer/audience verification.
+- Authentication rate limiting.
+- Member role by default; privileged roles are not selectable through public registration.
+- No real-data or data-export endpoint.
 
 ## Not yet implemented
 
-- Frontend sign-in and API integration.
-- Password reset, email verification, MFA, refresh/session revocation.
+- Password reset, email verification, MFA, session revocation, and rate-limited account recovery.
 - Formal reviewer provisioning and organisational tenancy.
-- Field-level policy engine and data-release enforcement.
-- Durable, tamper-evident audit architecture and external monitoring.
-- Automated integration tests using an isolated test database.
-- Production deployment, TLS/proxy configuration, backups, incident response, privacy and security assessment.
+- Dedicated CSRF token mechanism; current browser protection combines SameSite cookie settings with Origin allow-list checks.
+- Field-level policy engine and real data-release enforcement.
+- Cryptographically tamper-evident audit architecture and external monitoring.
+- Automated integration tests using an isolated MongoDB test database.
+- Production deployment hardening, backups, incident response, privacy/legal/ethics review, and independent penetration testing.
 
 Do not connect this service to real participants or health datasets.
