@@ -48,11 +48,11 @@ In this demonstration, a signed-in member represents the participant and may pro
 - \`POST /api/access-requests\` — submit \`{ recipientName, recipientOrganisation, purpose, scope, rationale }\`. Scope is restricted to \`synthetic-demo\`.
 - \`POST /api/access-requests/:id/review\` — reviewer/admin only; body: \`{ status, reviewNote }\`.
 
-Approval is blocked unless the latest consent record for that purpose is granted. Approval is a workflow decision only: **there is no data retrieval or data export endpoint**. A production implementation would need a separate policy-enforcement layer that checks current consent and approval on every protected operation.
+Approval is blocked unless the latest consent record for that purpose is granted. Approval is a workflow decision only: **there is no data retrieval or data export endpoint**. A production implementation would need a separate policy-enforcement layer that checks current consent and approval on every protected operation. Review is separated from submission, and the decision update is conditional on the request still being pending.
 
 ### Audit events
 
-- \`GET /api/audit-events/me\` — returns events performed by the signed-in account, up to 100.
+- \`GET /api/audit-events/me\` — returns up to 100 events performed by or concerning the signed-in account.
 - Audit events are created by backend workflows. No application update/delete routes are exposed.
 
 This is append-only at the application layer, not cryptographically immutable. Database administrators and infrastructure operators can still alter stored data.
