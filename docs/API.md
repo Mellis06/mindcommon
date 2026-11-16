@@ -15,7 +15,7 @@ This backend is a development foundation, not a production service. It stores ac
 3. Replace \`JWT_SECRET\` with a random value of at least 32 characters.
 4. Set \`MONGODB_URI\` to a development MongoDB database.
 5. Start the service: \`npm run dev\`
-6. Run tests: \`npm test\`
+6. Run checks: \`npm run check\` and \`npm test\`
 
 The default API port is 4000. Health check: \`GET /api/health\`.
 
@@ -42,11 +42,13 @@ A new consent choice appends a record. It does not overwrite prior history. Appr
 
 ### Access requests
 
+In this demonstration, a signed-in member represents the participant and may propose sharing a synthetic demo record with a named recipient organisation for one defined purpose. A reviewer/community steward then reviews the proposal.
+
 - \`GET /api/access-requests\` — members see their own requests; reviewers/admins see the review queue.
-- \`POST /api/access-requests\` — submit \`{ requesterName, organisation, purpose, scope, rationale }\`. Scope is restricted to \`synthetic-demo\`.
+- \`POST /api/access-requests\` — submit \`{ recipientName, recipientOrganisation, purpose, scope, rationale }\`. Scope is restricted to \`synthetic-demo\`.
 - \`POST /api/access-requests/:id/review\` — reviewer/admin only; body: \`{ status, reviewNote }\`.
 
-Approving a request is blocked unless the latest consent record for that purpose is granted. Approval is a workflow decision only: **there is no data retrieval or data export endpoint**. A production implementation would need a separate policy-enforcement layer that checks current consent and approval on every protected operation.
+Approval is blocked unless the latest consent record for that purpose is granted. Approval is a workflow decision only: **there is no data retrieval or data export endpoint**. A production implementation would need a separate policy-enforcement layer that checks current consent and approval on every protected operation.
 
 ### Audit events
 
