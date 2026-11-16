@@ -42,8 +42,8 @@ test("consent requires a recognised purpose and status", () => {
 
 test("access request is restricted to synthetic-demo scope", () => {
   const base = {
-    requesterName: "Research Team",
-    organisation: "Example Community Group",
+    recipientName: "Community Research Team",
+    recipientOrganisation: "Example Community Group",
     purpose: "research",
     rationale: "We need to review the synthetic demonstration workflow."
   };
