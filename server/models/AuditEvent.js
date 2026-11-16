@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const auditEventSchema = new mongoose.Schema({
   actorId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+  subjectId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
   action: { type: String, required: true, maxlength: 80 },
   resourceType: { type: String, required: true, maxlength: 50 },
   resourceId: { type: String, maxlength: 80 },
@@ -10,6 +11,7 @@ const auditEventSchema = new mongoose.Schema({
 }, { timestamps: true, versionKey: false });
 
 auditEventSchema.index({ actorId: 1, createdAt: -1 });
+auditEventSchema.index({ subjectId: 1, createdAt: -1 });
 
 // There are intentionally no application routes for updating or deleting audit events.
 // Database administrators can still alter data; this is not a cryptographically immutable log.
