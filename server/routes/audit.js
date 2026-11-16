@@ -7,7 +7,12 @@ router.use(requireAuth);
 
 router.get("/me", async (req, res, next) => {
   try {
-    const events = await AuditEvent.find({ actorId: req.user._id })
+    const events = await AuditEvent.find({
+      $or: [
+        { actorId: req.user._id },
+        { subjectId: req.user._id }
+      ]
+    })
       .sort({ createdAt: -1 })
       .limit(100)
       .lean();
