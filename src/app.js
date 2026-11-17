@@ -23,7 +23,8 @@
     authMode: "login",
     consents: [],
     requests: [],
-    events: []
+    events: [],
+    pendingConsents: new Set()
   };
 
   const $ = (selector, root) => (root || document).querySelector(selector);
@@ -410,7 +411,12 @@
     }
   }
 
-  async function changeConsent(purpose, status) {
+  async function changeConsent(purpose, status, button) {
+    // Prevent double-clicks or overlapping grant/withdraw requests for the same purpose.
+    if (state.pendingConsents.has(purpose)) return;
+    state.pendingConsents.add(purpose);
+    if (button) button.disabled = true;
+
     try {
       await api("/consents", {
         method: "POST",
@@ -421,6 +427,9 @@
       flash(PURPOSES[purpose].label + ": " + (status === "granted" ? "permission recorded." : "withdrawal recorded."));
     } catch (error) {
       handleApiError(error);
+    } finally {
+      state.pendingConsents.delete(purpose);
+      if (button && button.isConnected) button.disabled = false;
     }
   }
 
@@ -474,7 +483,7 @@
 
     const consent = event.target.closest("[data-consent]");
     if (consent && state.user) {
-      await changeConsent(consent.dataset.consent, consent.dataset.status);
+      await changeConsent(consent.dataset.consent, consent.dataset.status, consent);
       return;
     }
 
