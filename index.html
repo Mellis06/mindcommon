@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101c2c">
   <meta name="description" content="MINDCOMMON — community-owned mental health data and responsible AI governance.">
-  <title>MINDCOMMON — Data Governance Demo</title>
+  <meta name="mindcommon-api-base" content="http://localhost:4000/api">
+  <title>MINDCOMMON — Community Data Governance</title>
   <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
-  <div class="app-shell">
+  <main id="auth-shell" class="auth-shell" hidden></main>
+  <div class="app-shell" id="app-shell" hidden>
     <aside class="sidebar">
       <a class="brand" href="#" aria-label="MINDCOMMON home">
         <span class="brand-mark">M</span>
@@ -24,21 +26,22 @@
         <button class="nav-item" data-view="community"><span>◎</span> Community governance</button>
       </nav>
       <div class="sidebar-bottom">
-        <div class="demo-note"><strong>Demo environment</strong><p>Synthetic records only. No real participant data.</p></div>
-        <span class="version">MINDCOMMON · v0.1</span>
+        <div class="demo-note"><strong>Prototype environment</strong><p>Use synthetic information only. Do not enter real participant or health data.</p></div>
+        <span class="version">MINDCOMMON · v0.3</span>
       </div>
     </aside>
-
     <main class="main">
       <header class="topbar">
         <div><span class="eyebrow">PUBLIC INTEREST TECHNOLOGY</span><h1 id="page-title">Overview</h1></div>
-        <div class="user-chip"><span class="avatar">AM</span><span><strong>Amara M.</strong><small>Demo participant</small></span></div>
+        <div class="top-actions"><div class="user-chip" id="user-chip"></div><button class="btn secondary signout" id="signout-button" type="button">Sign out</button></div>
       </header>
-      <div class="notice"><span>ⓘ</span><p><strong>Prototype only.</strong> This interface demonstrates governance concepts. It is not a secure service and must not be used with real health information.</p></div>
+      <div id="flash" class="flash" role="status" aria-live="polite" hidden></div>
+      <div class="notice"><span>ⓘ</span><p><strong>Prototype only.</strong> This application demonstrates consent and governance workflows using synthetic/demo metadata. It is not a clinical system and must not be used with real health information.</p></div>
       <section id="view" aria-live="polite"></section>
       <footer>© MINDCOMMON · An open-source public-interest prototype <span>Built for transparency, participation, and accountability.</span></footer>
     </main>
   </div>
+  <script src="src/config.js"></script>
   <script src="src/app.js"></script>
 </body>
 </html>

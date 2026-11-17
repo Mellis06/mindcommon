@@ -17,15 +17,18 @@ The roadmap is provisional and should be revised through community and prospecti
 - [ ] Agree measurable outcomes and safe evaluation methods.
 - [ ] Confirm any host or community partnership in writing before describing it as established.
 
-## Stage 2 — Synthetic-data backend
+## Stage 2 — Synthetic-data software foundation
 
-- [ ] Define API contracts and threat model.
-- [ ] Implement identity and role model.
-- [ ] Implement versioned consent records and withdrawal semantics.
-- [ ] Implement access-request workflow with server-side policy checks.
-- [ ] Implement restricted audit-event service and integrity strategy.
-- [ ] Add automated tests, security checks, and OpenAPI documentation.
-- [ ] Use synthetic data exclusively.
+- [x] Define initial API contracts and publish the threat model.
+- [x] Implement member identity and server-side role checks.
+- [x] Implement versioned, purpose-specific consent records and withdrawal history.
+- [x] Implement participant-submitted access proposals and reviewer decisions.
+- [x] Add initial server-side audit event recording.
+- [x] Restrict proposals to synthetic-demo scope; no participant health-data retrieval or export endpoint.
+- [x] Connect browser registration, login, consent, proposal, review, and audit screens to the API.
+- [x] Add baseline validation tests, syntax checks, and GitHub Actions CI.
+- [ ] Add MongoDB integration tests, OpenAPI specification, and a formal policy-enforcement design.
+- [ ] Complete independent code, privacy, and security review before any pilot.
 
 ## Stage 3 — Independent review and controlled usability testing
 
